@@ -234,7 +234,13 @@ fn find_wasm_symbol_offsets<'a, R: ReadRef<'a>>(
         .expect("Data section start offset should be within the file contents");
 
     // Parse the wasm file to find the globals
-    let module = walrus::Module::from_buffer(file_contents).unwrap();
+    let module = match walrus::Module::from_buffer(file_contents) {
+        Ok(module) => module,
+        Err(e) => {
+            tracing::warn!("Failed to parse WASM file: {}", e);
+            return Ok(Vec::new());
+        }
+    };
     let mut offsets = Vec::new();
 
     // Find the main memory offset
